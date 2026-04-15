@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard · Gamma Laboratories 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+  :root {
+    --bg:#F0F4FF;--surface:#FFFFFF;--surface2:#F7F9FF;--border:#E2E8F8;
+    --text-primary:#0D1B3E;--text-secondary:#4A5580;--text-muted:#8A96B8;
+    --blue:#1A6EFF;--cyan:#00C2E0;--green:#00C48C;--orange:#FF7A00;
+    --red:#FF3B5C;--purple:#7B5EA7;--yellow:#FFB800;
+    --blue-soft:#EEF4FF;--green-soft:#EAFAF5;--orange-soft:#FFF4EA;--red-soft:#FFF0F3;
+    --shadow:0 2px 16px rgba(26,110,255,0.08);--shadow-lg:0 8px 40px rgba(26,110,255,0.14);
+    --radius:16px;--radius-sm:10px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text-primary);min-height:100vh;padding:0;}
+  header{background:linear-gradient(135deg,#0D1B3E 0%,#1A3A7A 60%,#1A6EFF 100%);padding:28px 40px 24px;display:flex;align-items:center;justify-content:space-between;position:relative;overflow:hidden;}
+  header::before{content:'';position:absolute;top:-60px;right:-60px;width:280px;height:280px;background:rgba(255,255,255,0.04);border-radius:50%;}
+  header::after{content:'';position:absolute;bottom:-80px;right:200px;width:180px;height:180px;background:rgba(0,194,224,0.08);border-radius:50%;}
+  .header-left{display:flex;align-items:center;gap:18px;}
+  .logo-badge{width:52px;height:52px;background:linear-gradient(135deg,#1A6EFF,#00C2E0);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:white;letter-spacing:-1px;box-shadow:0 4px 20px rgba(26,110,255,0.4);}
+  .header-info h1{font-size:20px;font-weight:800;color:white;letter-spacing:-0.5px;}
+  .header-info p{font-size:12px;color:rgba(255,255,255,0.55);margin-top:2px;font-weight:500;letter-spacing:0.5px;text-transform:uppercase;}
+  .header-badges{display:flex;gap:12px;align-items:center;}
+  .badge-week{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:24px;padding:6px 16px;font-size:12px;color:rgba(255,255,255,0.85);font-weight:500;}
+  .badge-live{background:rgba(0,196,140,0.2);border:1px solid rgba(0,196,140,0.4);border-radius:24px;padding:6px 14px;font-size:12px;color:#00C48C;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:#00C48C;animation:pulse 1.8s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(1.3)}}
+  main{padding:32px 40px;max-width:1600px;margin:0 auto;}
+  .kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:28px;}
+  .kpi-card{background:var(--surface);border-radius:var(--radius);padding:22px 22px 18px;box-shadow:var(--shadow);border:1.5px solid var(--border);position:relative;overflow:hidden;transition:transform 0.18s,box-shadow 0.18s;}
+  .kpi-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);}
+  .kpi-card .accent-bar{position:absolute;top:0;left:0;right:0;height:4px;border-radius:16px 16px 0 0;}
+  .kpi-card .kpi-icon{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:14px;}
+  .kpi-card .kpi-value{font-size:34px;font-weight:800;letter-spacing:-1.5px;line-height:1;}
+  .kpi-card .kpi-label{font-size:12px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;}
+  .kpi-card .kpi-sub{font-size:11px;color:var(--text-muted);margin-top:10px;display:flex;align-items:center;gap:4px;font-weight:500;}
+  .kpi-card .kpi-sub .tag{padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+  .grid-3{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:20px;margin-bottom:20px;}
+  .grid-3b{display:grid;grid-template-columns:1fr 1fr 1.2fr;gap:20px;margin-bottom:20px;}
+  .chart-card{background:var(--surface);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);border:1.5px solid var(--border);transition:transform 0.18s;}
+  .chart-card:hover{transform:translateY(-2px);}
+  .card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;}
+  .card-title{font-size:14px;font-weight:700;color:var(--text-primary);}
+  .card-sub{font-size:11px;color:var(--text-muted);margin-top:2px;font-weight:500;}
+  .card-badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;}
+  .donut-group{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .donut-item{text-align:center;}
+  .donut-item canvas{max-width:90px;}
+  .donut-label{font-size:11px;font-weight:700;color:var(--text-secondary);margin-top:6px;text-transform:uppercase;letter-spacing:0.3px;}
+  .donut-pct{font-size:16px;font-weight:800;color:var(--text-primary);}
+  .data-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .data-table th{background:var(--surface2);color:var(--text-secondary);font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:0.5px;padding:10px 12px;text-align:left;border-bottom:2px solid var(--border);}
+  .data-table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-primary);font-weight:500;}
+  .data-table tr:last-child td{border-bottom:none;}
+  .data-table tr:hover td{background:var(--surface2);}
+  .pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+  .breakdown-bar{margin-bottom:14px;}
+  .bar-info{display:flex;justify-content:space-between;margin-bottom:5px;}
+  .bar-name{font-size:12px;font-weight:600;color:var(--text-primary);}
+  .bar-vals{font-size:12px;font-weight:700;}
+  .bar-track{height:8px;background:var(--border);border-radius:99px;overflow:hidden;}
+  .bar-fill{height:100%;border-radius:99px;transition:width 1s cubic-bezier(.4,0,.2,1);}
+  .section-label{font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin:6px 0 16px;display:flex;align-items:center;gap:10px;}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+  .aprobado{background:#EAFAF5;color:#00C48C;}
+  .pendiente{background:#FFF4EA;color:#FF7A00;}
+  .devuelto{background:#FFF0F3;color:#FF3B5C;}
+  .analysis-box{background:linear-gradient(135deg,#F0F4FF,#EEF4FF);border:1.5px solid #C7D8FF;
+    border-left:4px solid #1A6EFF;border-radius:10px;padding:12px 16px;
+    font-size:12px;color:#0D1B3E;line-height:1.7;margin-top:14px;}
+  .analysis-box.warning{background:linear-gradient(135deg,#FFF8EC,#FFF4EA);border-color:#FFD580;border-left-color:#FF7A00;}
+  .analysis-box.danger{background:linear-gradient(135deg,#FFF2F5,#FFF0F3);border-color:#FFB3C0;border-left-color:#FF3B5C;}
+  footer{text-align:center;padding:20px;font-size:11px;color:var(--text-muted);font-weight:500;border-top:1px solid var(--border);background:var(--surface);margin-top:8px;}
+  ::-webkit-scrollbar{width:6px;} ::-webkit-scrollbar-track{background:var(--bg);} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <div class="logo-badge">GL</div>
+    <div class="header-info">
+      <h1>Gamma Laboratories &middot; Control de Protocolos</h1>
+      <p>Dashboard Gerencial de Producci&oacute;n &amp; Empaque &middot; 2026</p>
+    </div>
+  </div>
+  <div class="header-badges">
+    <div class="badge-week">&#128197; Semana Emisi&oacute;n: Semana de Emisi�n: 09 Marz � 13 Marz 2026</div>
+    <div class="badge-week">&#127981; Semana Fabricaci&oacute;n: Semana de Fabricaci�n: 16 Marz � 20 Marz 2026</div>
+    <div class="badge-live"><span class="live-dot"></span> En Vivo</div>
+  </div>
+</header>
+<main>
+<div class="kpi-row">
+  <div class="kpi-card"><div class="accent-bar" style="background:linear-gradient(90deg,#1A6EFF,#00C2E0)"></div>
+    <div class="kpi-icon" style="background:#EEF4FF;color:#1A6EFF;">&#128203;</div>
+    <div class="kpi-value" style="color:#1A6EFF;">767</div>
+    <div class="kpi-label">Protocolos Emitidos</div>
+    <div class="kpi-sub">Total acumulado 2026</div></div>
+  <div class="kpi-card"><div class="accent-bar" style="background:linear-gradient(90deg,#00C48C,#00E0A0)"></div>
+    <div class="kpi-icon" style="background:#EAFAF5;color:#00C48C;">&#9989;</div>
+    <div class="kpi-value" style="color:#00C48C;">719</div>
+    <div class="kpi-label">Fabricados</div>
+    <div class="kpi-sub"><span class="tag" style="background:#EAFAF5;color:#00C48C;">93.7%</span> de emitidos</div></div>
+  <div class="kpi-card"><div class="accent-bar" style="background:linear-gradient(90deg,#7B5EA7,#A07CD0)"></div>
+    <div class="kpi-icon" style="background:#F3EEFF;color:#7B5EA7;">&#128230;</div>
+    <div class="kpi-value" style="color:#7B5EA7;">678</div>
+    <div class="kpi-label">Archivados</div>
+    <div class="kpi-sub"><span class="tag" style="background:#F3EEFF;color:#7B5EA7;">88.4%</span> de emitidos</div></div>
+  <div class="kpi-card"><div class="accent-bar" style="background:linear-gradient(90deg,#FF7A00,#FFB800)"></div>
+    <div class="kpi-icon" style="background:#FFF4EA;color:#FF7A00;">&#9203;</div>
+    <div class="kpi-value" style="color:#FF7A00;">55</div>
+    <div class="kpi-label">Pend. Empaque</div>
+    <div class="kpi-sub">Requieren cierre</div></div>
+  <div class="kpi-card"><div class="accent-bar" style="background:linear-gradient(90deg,#FF3B5C,#FF7A8A)"></div>
+    <div class="kpi-icon" style="background:#FFF0F3;color:#FF3B5C;">&#9888;</div>
+    <div class="kpi-value" style="color:#FF3B5C;">42</div>
+    <div class="kpi-label">Errores Acum.</div>
+    <div class="kpi-sub">Pendientes de correcci&oacute;n</div></div>
+</div>
+<div class="section-label">Indicadores por Categor&iacute;a &middot; Semana Actual</div>
+<div class="grid-3">
+  <div class="chart-card">
+    <div class="card-header"><div><div class="card-title">Emitidos / Fabricados / Archivados por Categor&iacute;a</div>
+    <div class="card-sub">Comparativo semanal por forma farmac&eacute;utica</div></div>
+    <span class="card-badge" style="background:#EEF4FF;color:#1A6EFF;">SEMANA</span></div>
+    <canvas id="barGrouped" height="200"></canvas>
+    <div class="analysis-box">📊 <strong>Análisis:</strong> Sólidos concentra el mayor volumen operativo (148 emitidos), indicando la carga principal de producción. La categoría <strong>Sólidos</strong> presenta la eficiencia más baja (64.9%), requiriendo atención gerencial inmediata para reducir la brecha entre emitidos y fabricados.</div>
+  </div>
+  <div class="chart-card">
+    <div class="card-header"><div><div class="card-title">Radar de Eficiencia Semanal</div>
+    <div class="card-sub">% Fabricados / Emitidos en semana actual</div></div></div>
+    <canvas id="radarEff" height="240"></canvas>
+    <div class="analysis-box">🎯 <strong>Análisis:</strong> El radar evidencia que Sólidos, Semisólidos y Estériles mantienen eficiencias superiores al 85%, lo que indica procesos maduros. Sin embargo, <strong>Líquidos (85.8%)</strong> se aleja del estándar óptimo y debe ser prioridad de mejora en el próximo ciclo de fabricación.</div>
+  </div>
+  <div class="chart-card">
+    <div class="card-header"><div><div class="card-title">Empaque Pendiente por Categor&iacute;a</div>
+    <div class="card-sub">Distribuci&oacute;n de carga de cierre</div></div>
+    <span class="card-badge" style="background:#FFF4EA;color:#FF7A00;">55 PEND.</span></div>
+    <canvas id="doughnutEmpaque" height="200"></canvas>
+    <div class="analysis-box warning">📦 <strong>Análisis:</strong> <strong>Líquidos acumula 11 protocolos</strong> pendientes de empaque, representando el cuello de botella más crítico. Se recomienda reforzar el área de empaque de Líquidos para evitar retrasos en entregas a contabilidad.</div>
+  </div>
+</div>
+<div class="section-label">Errores Acumulados &amp; Tendencia Mensual</div>
+<div class="grid-3b">
+  <div class="chart-card">
+    <div class="card-header"><div><div class="card-title">Errores Acumulados por Categor&iacute;a</div>
+    <div class="card-sub">Errores en protocolo pendientes de revisi&oacute;n</div></div>
+    <span class="card-badge" style="background:#FFF0F3;color:#FF3B5C;">42 TOTAL</span></div>
+    <canvas id="barErrors" height="180"></canvas>
+    <div class="analysis-box danger">⚠️ <strong>Análisis:</strong> <strong>Sólidos registra 25 errores acumulados</strong>, el mayor de todas las categorías. Los errores en protocolos impactan directamente los tiempos de revisión y aprobación. Se sugiere auditoría de procesos y capacitación del equipo de Sólidos.</div>
+  </div>
+  <div class="chart-card">
+    <div class="card-header"><div><div class="card-title">Protocolos Completados por Mes</div>
+    <div class="card-sub">Tendencia acumulada 2026</div></div></div>
+    <canvas id="lineMonth" height="180"></canvas>
+    <div class="analysis-box">📅 <strong>Análisis:</strong> La curva mensual muestra que <strong>Marzo fue el mes con mayor actividad</strong> (33 protocolos completados). Los meses en cero reflejan períodos sin datos registrados o inicio de año. El seguimiento mensual permite proyectar necesidades de personal y recursos para los próximos trimestres.</div>
+  </div>
+  <div class="chart-card">
+    <div class="card-header"><div><div class="card-title">Estado Global de Protocolos</div>
+    <div class="card-sub">Completos vs Pendientes Cr&iacute;ticos</div></div></div>
+    <div style="position:relative;display:flex;justify-content:center;margin-bottom:12px;">
+      <canvas id="doughnutStatus" style="max-width:190px;"></canvas>
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;">
+        <div style="font-size:22px;font-weight:800;color:var(--text-primary);">517</div>
+        <div style="font-size:10px;font-weight:600;color:var(--text-muted);text-transform:uppercase;">Total</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center;gap:20px;font-size:12px;margin-top:8px;">
+      <div><span style="width:10px;height:10px;border-radius:50%;background:#00C48C;display:inline-block;"></span> Completos: 246</div>
+      <div><span style="width:10px;height:10px;border-radius:50%;background:#FF3B5C;display:inline-block;"></span> Cr&iacute;ticos: 271</div>
+    </div>
+    <div class="analysis-box danger">🔴 <strong>Análisis CRÍTICO:</strong> Los pendientes críticos (271) <strong>superan a los protocolos completos</strong> (246). Esto representa un riesgo operativo alto. Gerencia debe activar plan de contingencia para liberar los 271 protocolos en espera.</div>
+  </div>
+</div>
+<div class="section-label">Desglose de Eficiencia por Forma Farmac&eacute;utica</div>
+<div class="grid-2">
+  <div class="chart-card">
+    <div class="card-header"><div><div class="card-title">Desglose de Eficiencia Semanal</div>
+    <div class="card-sub">% Fabricados vs Emitidos por categor&iacute;a</div></div></div>
+    <div class="donut-group">
+      <div class="donut-item"><canvas id="d1" width="90" height="90"></canvas><div class="donut-label">L&iacute;quidos</div><div class="donut-pct">85.8%</div></div>
+      <div class="donut-item"><canvas id="d2" width="90" height="90"></canvas><div class="donut-label">S&oacute;lidos</div><div class="donut-pct">64.9%</div></div>
+      <div class="donut-item"><canvas id="d3" width="90" height="90"></canvas><div class="donut-label">Semis&oacute;lidos</div><div class="donut-pct">90.2%</div></div>
+      <div class="donut-item"><canvas id="d4" width="90" height="90"></canvas><div class="donut-label">Est&eacute;riles</div><div class="donut-pct">89.7%</div></div>
+    </div>
+    <div class="analysis-box">&#128200; <strong>An&aacute;lisis:</strong> Eficiencia global acumulada: <strong>93.7%</strong>. Los mini-donuts permiten identificar visualmente qu&eacute; categor&iacute;as requieren refuerzo operativo esta semana.</div>
+  </div>
+  <div class="chart-card">
+    <div class="card-header"><div><div class="card-title">Resumen Semanal por Categor&iacute;a</div>
+    <div class="card-sub">Emitidos, archivados, pendientes y eficiencia</div></div>
+    <span class="card-badge" style="background:#EEF4FF;color:#1A6EFF;">ACUMULADO</span></div>
+    <table class="data-table"><thead><tr>
+      <th>Categor&iacute;a</th><th>Emitidos</th><th>Archivados</th><th>Pend. Emp.</th><th>Eficiencia</th></tr></thead><tbody>
+      <tr><td><strong>&#128167; L&iacute;quidos</strong></td><td>120</td><td>77</td><td><span class="pill pendiente">11</span></td><td><span class="pill aprobado">85.8%</span></td></tr>
+      <tr><td><strong>&#128138; S&oacute;lidos</strong></td><td>148</td><td>81</td><td><span class="pill pendiente">9</span></td><td><span class="pill aprobado">64.9%</span></td></tr>
+      <tr><td><strong>&#128138; Semis&oacute;lidos</strong></td><td>41</td><td>30</td><td><span class="pill pendiente">0</span></td><td><span class="pill aprobado">90.2%</span></td></tr>
+      <tr><td><strong>&#128137; Est&eacute;riles</strong></td><td>39</td><td>16</td><td><span class="pill pendiente">5</span></td><td><span class="pill aprobado">89.7%</span></td></tr>
+      <tr style="background:var(--surface2);"><td><strong>TOTAL</strong></td><td><strong>767</strong></td><td><strong>678</strong></td><td><strong>55</strong></td><td><strong style="color:#00C48C;">93.7%</strong></td></tr>
+    </tbody></table>
+  </div>
+</div>
+<div class="section-label">Detalle de Producci&oacute;n vs Empaque &middot; Semana Actual</div>
+<div class="grid-2">
+  <div class="chart-card">
+    <div class="card-header"><div><div class="card-title">Prod. Archivados vs Empaque Archivados &middot; Semana</div>
+    <div class="card-sub">Comparativo por categor&iacute;a &middot; Semana Semana de Emisi�n: 09 Marz � 13 Marz 2026</div></div></div>
+    <canvas id="barProdEmp" height="180"></canvas>
+    <div class="analysis-box">📋 <strong>Análisis:</strong> En todas las categorías, los <strong>registros de empaque archivados superan a los de producción</strong>, lo que refleja un flujo saludable donde el empaque procesa más rápido. Sin embargo, la brecha en Líquidos (92 empaque vs 77 producción) merece revisión para asegurar consistencia documental.</div>
+  </div>
+  <div class="chart-card">
+    <div class="card-header"><div><div class="card-title">Pendientes: Producci&oacute;n vs Empaque</div>
+    <div class="card-sub">Estado actual de protocolos en proceso</div></div></div>
+    <canvas id="barPendientes" height="180"></canvas>
+    <div class="analysis-box warning">⏳ <strong>Análisis:</strong> Se acumulan <strong>67 protocolos pendientes de producción</strong> y 25 de empaque en la semana. Líquidos concentra la mayor carga de producción pendiente (26 protocolos), lo que puede derivar en incumplimiento de fechas comprometidas con clientes.</div>
+  </div>
+</div>
+</main>
+<footer>Gamma Laboratories &middot; Sistema de Control de Protocolos 2026 &middot; Generado autom&aacute;ticamente el 14/04/2026 15:35</footer>
+<script>
+Chart.defaults.font.family="'Plus Jakarta Sans', sans-serif";
+Chart.defaults.color='#4A5580';
+
+const cats=['L\u00edquidos','S\u00f3lidos','Semis\u00f3lidos','Est\u00e9riles'];
+const emitidos=[120,148,41,39];
+const fabricados=[103,96,37,35];
+const archivados=[77,81,30,16];
+const pendEmpaque=[11,9,0,5];
+const errores=[0,25,10,7];
+
+new Chart(document.getElementById('barGrouped'),{type:'bar',data:{labels:cats,datasets:[
+  {label:'Emitidos',data:emitidos,backgroundColor:'#1A6EFF',borderRadius:6},
+  {label:'Fabricados',data:fabricados,backgroundColor:'#00C48C',borderRadius:6},
+  {label:'Archivados',data:archivados,backgroundColor:'#7B5EA7',borderRadius:6}]}
+,options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11,weight:'600'},padding:14,usePointStyle:true,pointStyle:'circle'}}},
+scales:{x:{grid:{display:false},ticks:{font:{weight:'600'}}},y:{grid:{color:'#E2E8F8'},ticks:{font:{size:11}}}}}});
+new Chart(document.getElementById('radarEff'),{type:'radar',data:{
+  labels:["L\u00edquidos\n85.8%","S\u00f3lidos\n64.9%","Semis\u00f3lidos\n90.2%","Est\u00e9riles\n89.7%"],
+  datasets:[{label:'Eficiencia',data:[85.8,64.9,90.2,89.7],
+  backgroundColor:'rgba(26,110,255,0.15)',borderColor:'#1A6EFF',borderWidth:2.5,pointBackgroundColor:'#1A6EFF',pointRadius:5}]},
+options:{responsive:true,plugins:{legend:{display:false}},scales:{r:{min:60,max:100,ticks:{stepSize:10,font:{size:10}},grid:{color:'#E2E8F8'},pointLabels:{font:{size:11,weight:'700'}}}}}});
+new Chart(document.getElementById('doughnutEmpaque'),{type:'doughnut',data:{labels:cats,datasets:[{data:pendEmpaque,backgroundColor:['#1A6EFF','#00C48C','#7B5EA7','#FF7A00'],borderWidth:3,borderColor:'#fff',hoverOffset:8}]},
+options:{responsive:true,cutout:'65%',plugins:{legend:{position:'bottom',labels:{font:{size:11,weight:'600'},padding:12,usePointStyle:true,pointStyle:'circle'}}}}});
+new Chart(document.getElementById('barErrors'),{type:'bar',data:{labels:cats,datasets:[{label:'Errores Acum.',data:errores,backgroundColor:['#FF7A8A','#FF3B5C','#FF7A00','#FFB800'],borderRadius:8}]},
+options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'#E2E8F8'}},y:{grid:{display:false},ticks:{font:{weight:'600'}}}}}});
+new Chart(document.getElementById('lineMonth'),{type:'line',data:{
+  labels:['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'],
+  datasets:[{label:'Protocolos Completados',data:[0,0,33,13,0,0,0,0,0,0,0,0],
+  borderColor:'#1A6EFF',backgroundColor:'rgba(26,110,255,0.10)',borderWidth:2.5,fill:true,tension:0.4,pointBackgroundColor:'#1A6EFF',pointRadius:5}]},
+options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{weight:'600'}}},y:{grid:{color:'#E2E8F8'},min:0}}}});
+new Chart(document.getElementById('doughnutStatus'),{type:'doughnut',data:{
+  labels:['Completos','Pendientes Cr\u00edticos'],
+  datasets:[{data:[246,271],backgroundColor:['#00C48C','#FF3B5C'],borderWidth:3,borderColor:'#fff',hoverOffset:8}]},
+options:{responsive:true,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw} protocolos`}}}}});
+new Chart(document.getElementById('d1'),{type:'doughnut',data:{datasets:[{data:[85.8,14.2],
+  backgroundColor:['#FF7A00','#E2E8F8'],borderWidth:0}]},options:{responsive:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+new Chart(document.getElementById('d2'),{type:'doughnut',data:{datasets:[{data:[64.9,35.1],
+  backgroundColor:['#FF3B5C','#E2E8F8'],borderWidth:0}]},options:{responsive:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+new Chart(document.getElementById('d3'),{type:'doughnut',data:{datasets:[{data:[90.2,9.8],
+  backgroundColor:['#00C48C','#E2E8F8'],borderWidth:0}]},options:{responsive:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+new Chart(document.getElementById('d4'),{type:'doughnut',data:{datasets:[{data:[89.7,10.3],
+  backgroundColor:['#FF7A00','#E2E8F8'],borderWidth:0}]},options:{responsive:false,cutout:'72%',plugins:{legend:{display:false},tooltip:{enabled:false}}}});
+new Chart(document.getElementById('barProdEmp'),{type:'bar',data:{labels:cats,datasets:[
+  {label:'Prod. Archivados',data:[77,81,30,16],backgroundColor:'#1A6EFF',borderRadius:6},
+  {label:'Empq. Archivados',data:[92,87,37,30],backgroundColor:'#00C2E0',borderRadius:6}]},
+options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11,weight:'600'},padding:12,usePointStyle:true,pointStyle:'circle'}}},
+scales:{x:{grid:{display:false},ticks:{font:{weight:'600'}}},y:{grid:{color:'#E2E8F8'}}}}});
+new Chart(document.getElementById('barPendientes'),{type:'bar',data:{labels:cats,datasets:[
+  {label:'Pend. Producci\u00f3n',data:[26,15,7,19],backgroundColor:'#FF7A00',borderRadius:6},
+  {label:'Pend. Empaque',data:[11,9,0,5],backgroundColor:'#FFB800',borderRadius:6}]},
+options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11,weight:'600'},padding:12,usePointStyle:true,pointStyle:'circle'}}},
+scales:{x:{grid:{display:false},ticks:{font:{weight:'600'}}},y:{grid:{color:'#E2E8F8'}}}}});
+</script>
+</body>
+</html>
